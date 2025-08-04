@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Network Traffic Simulator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #2c3e50;
+    }
+
+    input, select, button {
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #result {
+      background-color: #fff;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      max-width: 500px;
+    }
+
+    canvas {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🛰️ Network Traffic Simulator</h1>
+
+  <label>Source IP:</label><br>
+  <input type="text" id="srcIp" placeholder="e.g. 192.168.1.1"><br>
+
+  <label>Destination IP:</label><br>
+  <input type="text" id="dstIp" placeholder="e.g. 192.168.1.2"><br>
+
+  <label>Packet Count:</label><br>
+  <input type="number" id="packetCount" value="10"><br>
+
+  <label>Delay (ms):</label><br>
+  <input type="number" id="delay" value="500"><br>
+
+  <label>Traffic Type:</label><br>
+  <select id="trafficType">
+    <option value="Data">Data</option>
+    <option value="Voice">Voice</option>
+    <option value="Video">Video</option>
+  </select><br>
+
+  <button onclick="simulate()">Start Simulation</button>
+
+  <div id="result"></div>
+
+  <canvas id="chart" width="600" height="300"></canvas>
+
+  <script>
+    function simulate() {
+      const src = document.getElementById('srcIp').value;
+      const dst = document.getElementById('dstIp').value;
+      const count = parseInt(document.getElementById('packetCount').value);
+      const delay = parseInt(document.getElementById('delay').value);
+      const type = document.getElementById('trafficType').value;
+
+      if (!src || !dst || isNaN(count) || isNaN(delay)) {
+        alert("Please fill all fields correctly.");
+        return;
+      }
+
+      const resultDiv = document.getElementById('result');
+      const canvas = document.getElementById('chart');
+      const ctx = canvas.getContext('2d');
+
+      resultDiv.innerHTML = `<p>Simulating traffic from <b>${src}</b> to <b>${dst}</b>...</p>`;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      let packets = [];
+      let time = 0;
+
+      for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+          time += delay / 1000;
+          packets.push({ time: time.toFixed(1), packet: i + 1 });
+          drawGraph(packets);
+
+          if (i === count - 1) {
+            resultDiv.innerHTML = `
+              <h3>✅ Simulation Complete</h3>
+              <p><b>Source:</b> ${src}</p>
+              <p><b>Destination:</b> ${dst}</p>
+              <p><b>Traffic Type:</b> ${type}</p>
+              <p><b>Packets Sent:</b> ${count}</p>
+              <p><b>Delay:</b> ${delay} ms</p>
+            `;
+          }
+        }, i * delay);
+      }
+    }
+
+    function drawGraph(data) {
+      const canvas = document.getElementById('chart');
+      const ctx = canvas.getContext('2d');
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw axes
+      ctx.beginPath();
+      ctx.moveTo(40, 10);
+      ctx.lineTo(40, 280);
+      ctx.lineTo(590, 280);
+      ctx.strokeStyle = "#000";
+      ctx.stroke();
+
+      // Plot points
+      ctx.beginPath();
+      ctx.moveTo(40, 280);
+      data.forEach((point, index) => {
+        let x = 40 + point.time * 50;
+        let y = 280 - point.packet * 20;
+        ctx.lineTo(x, y);
+        ctx.arc(x, y, 3, 0, 2 * Math.PI);
+      });
+      ctx.strokeStyle = "blue";
+      ctx.stroke();
+    }
+  </script>
+
+</body>
+</html>
